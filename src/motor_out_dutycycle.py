@@ -1,10 +1,9 @@
-import RPi.GPIO as GPIO          
-from time import sleep
+import RPi.GPIO as GPIO   
 
 in1 = 24
 in2 = 23
 en = 25
-temp1 = 1
+temp1 = True
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(in1, GPIO.OUT)
@@ -27,8 +26,8 @@ while True:
         if 0 <= speed_input <= 100:
             duty_cycle = speed_input
             p.ChangeDutyCycle(speed_input)
-        elif speed_input == 'r':
-            if(temp1 == 1):
+        elif speed_input == -1:
+            if(temp1):
                 GPIO.output(in1,GPIO.HIGH)
                 GPIO.output(in2,GPIO.LOW)
                 print("forward")
@@ -36,9 +35,7 @@ while True:
                 GPIO.output(in1,GPIO.LOW)
                 GPIO.output(in2,GPIO.HIGH)
                 print("backward")
-        elif speed_input == 'e':
-            break
-
+            temp1 != temp1
         else:
             print("<<<  wrong data  >>>")
             print("please enter the defined data to continue.....")

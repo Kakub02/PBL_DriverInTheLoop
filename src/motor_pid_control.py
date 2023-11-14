@@ -1,9 +1,9 @@
 #import RPi.GPIO as GPIO
-from global_v_test import someGlobal
 from time import sleep
 import math
 
 def control(): #?
+    print('')
     #getTargetSpeed()
     #getRealSpeed()
     #calculateError()

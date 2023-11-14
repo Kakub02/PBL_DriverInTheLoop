@@ -1,5 +1,3 @@
-# Sample code to demonstrate Encoder class.  Prints the value every 5 seconds, and also whenever it changes.
-
 import time
 import RPi.GPIO as GPIO
 from encoder import Encoder
@@ -15,6 +13,7 @@ try:
     while True:
         time.sleep(5)
         print("Value is {}".format(e1.getValue()))
+        print("Value is {}".format(e1.getRealSpeed()))
 except Exception:
     pass
 
