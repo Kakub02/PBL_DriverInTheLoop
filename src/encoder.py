@@ -3,7 +3,9 @@ import time
 
 
 class Encoder:
-    def __init__(self, leftPin, rightPin, callback = None):
+   prevTime = 0.0
+   
+    def __init__(self, leftPin, rightPin, callback=None):
         self.leftPin = leftPin
         self.rightPin = rightPin
         self.value = 0
@@ -21,6 +23,7 @@ class Encoder:
         GPIO.add_event_detect(self.rightPin, GPIO.BOTH, callback=self.transitionOccurred)
 
     def transitionOccurred(self, channel):
+        global prevTime
         p1 = GPIO.input(self.leftPin)
         p2 = GPIO.input(self.rightPin)
         newState = "{}{}".format(p1, p2)
@@ -63,7 +66,16 @@ class Encoder:
                     self.value = self.value + 1
                     if self.callback is not None:
                         self.callback(self.value, self.direction)
-
+                        
+        currentTime = time.time()
+        if prevTime != None:
+            deltaTime = float((currentTime-prevTime)/1.0e6)
+            velocity = (self.value - prevPos)/deltaTime
+            # 1920 = 16 impulsow razy przekladnia 120:1, 32,5 = srednica kola, 60 = 60s -> 1min
+            self.currentRPM = float(velocity/(1920*32.5)*60.0) #chyba tak powinno byc max rpm to 160
+        
+        prevPos = self.value
+        prevTime = currentTime
         self.state = newState
         self.transitions += 1  # Increment transitions for speed calculation
 
