@@ -1,6 +1,0 @@
-[submodule "catlon_ws\\src"]
-	path = catlon_ws\\src
-	url = https://github.com/carla-simulator/ros-carla-msgs.git
-[submodule "ros-carla-msgs"]
-	path = ros-carla-msgs
-	url = https://github.com/carla-simulator/ros-carla-msgs.git
