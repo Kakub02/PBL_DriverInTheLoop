@@ -3,7 +3,7 @@ import time
 
 
 class Encoder:
-   prevTime = 0.0
+#    prevTime = 0.0
    
     def __init__(self, leftPin, rightPin, callback=None):
         self.leftPin = leftPin
@@ -15,7 +15,8 @@ class Encoder:
         # self.currentRPM = 0
         self.previousTime = time.time()
         self.transitions = 0  # Number of transitions since the last speed calculation
-        self.maxMotorSpeedRPM = 160  # Maximum speed of the motor in RPM
+        self.maxMotorSpeedRPM = 150  # Maximum speed of the motor in RPM
+        #----Pololu moze byc 100rpm----#
 
         GPIO.setup(self.leftPin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         GPIO.setup(self.rightPin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
@@ -67,15 +68,15 @@ class Encoder:
                     if self.callback is not None:
                         self.callback(self.value, self.direction)
                         
-        currentTime = time.time()
-        if prevTime != None:
-            deltaTime = float((currentTime-prevTime)/1.0e6)
-            velocity = (self.value - prevPos)/deltaTime
-            # 1920 = 16 impulsow razy przekladnia 120:1, 32,5 = srednica kola, 60 = 60s -> 1min
-            self.currentRPM = float(velocity/(1920*32.5)*60.0) #chyba tak powinno byc max rpm to 160
+        # currentTime = time.time()
+        # if prevTime != None:
+        #     deltaTime = float((currentTime-prevTime)/1.0e6)
+        #     velocity = (self.value - prevPos)/deltaTime
+        #     # 1920 = 16 impulsow razy przekladnia 120:1, 32,5 = srednica kola, 60 = 60s -> 1min
+        #     self.currentRPM = float(velocity/(1920*32.5)*60.0) #chyba tak powinno byc max rpm to 160
         
-        prevPos = self.value
-        prevTime = currentTime
+        # prevPos = self.value
+        # prevTime = currentTime
         self.state = newState
         self.transitions += 1  # Increment transitions for speed calculation
 
@@ -103,7 +104,7 @@ class Encoder:
         speedTransactionsPerSecond = self.transitions / timeElapsed
 
         # Convert speed to RPM
-        pulsesPerRevolution = 1920 # JAKIE U NAS TO JEST
+        pulsesPerRevolution = 1920 #In future 6400?
         currentSpeedRPM = (speedTransactionsPerSecond * 60) / pulsesPerRevolution
 
         # Calculate the fraction of the speed relative to the maximum motor speed
