@@ -7,12 +7,22 @@ from encoder import Encoder
 
 GPIO.setmode(GPIO.BCM)
 
-# Set GPIO pin numbers for motor
+# Set GPIO pin numbers for motors
+#Motor 1
 motor_in1 = 23
 motor_in2 = 24
-motor_en = 25
+motor_ena = 25
+#Motor 2
+motor_in3 = 23
+motor_in4 = 24
+motor_enb = 25
+
 
 # Set GPIO pin numbers for encoder
+#Encoder 1
+left_encoder_pin = 17
+right_encoder_pin = 27
+#Encoder 2
 left_encoder_pin = 17
 right_encoder_pin = 27
 
