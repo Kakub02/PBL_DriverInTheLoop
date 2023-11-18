@@ -1,6 +1,4 @@
-
 import RPi.GPIO as GPIO
-
 
 class Motor:
     # motor1 = Motor(23, 24, 25)
@@ -19,11 +17,11 @@ class Motor:
     #        self.setpoint = giveSetpoint
     #        self.setdirection = giveDirection
 
-    def setSpeed(self, setPointSpeed=0, direction=1):
-        if direction == 1:
+    def setSpeed(self, setPointSpeed=0, reverse = 0):
+        if reverse == 0:
             GPIO.output(self.in1, GPIO.HIGH)
             GPIO.output(self.in2, GPIO.LOW)
-        elif direction == -1:
+        elif reverse == 1:
             GPIO.output(self.in1, GPIO.LOW)
             GPIO.output(self.in2, GPIO.HIGH)
         self.pwm.ChangeDutyCycle(setPointSpeed)
