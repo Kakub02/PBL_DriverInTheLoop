@@ -3,7 +3,7 @@ import time
 
 
 class Encoder:
-#    prevTime = 0.0
+   #encoder1 = Encoder(27, 17, valueChanged)
    
     def __init__(self, leftPin, rightPin, callback=None):
         self.leftPin = leftPin

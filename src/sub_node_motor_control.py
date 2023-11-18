@@ -5,6 +5,8 @@ from motor import Motor
 from pid_controller import PIDController
 from encoder import Encoder
 
+GPIO.setmode(GPIO.BCM)
+
 # Set GPIO pin numbers for motor
 motor_in1 = 23
 motor_in2 = 24
@@ -12,7 +14,7 @@ motor_en = 25
 
 # Set GPIO pin numbers for encoder
 left_encoder_pin = 17
-right_encoder_pin = 18
+right_encoder_pin = 27
 
 # Set PID parameters
 kp=1.0

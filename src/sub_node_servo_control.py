@@ -43,9 +43,9 @@ class Servo_Control():
         loop = rospy.Rate(50.0) # frequency in Hz
 
         while not rospy.is_shutdown(): 
-            GPIO.cleanup()
             loop.sleep()
-    
+            GPIO.cleanup()
+   
     # def update_servo_roll(self,roll):
     #     duty_cycle = 2 + (roll / 18)
     #     self.servo.ChangeDutyCycle(duty_cycle)
@@ -57,4 +57,3 @@ if __name__ == "__main__":
     rospy.init_node("Servo_node", anonymous=True)
     servo_controller = Servo_Control()
     servo_controller.run()
-    GPIO.cleanup()
