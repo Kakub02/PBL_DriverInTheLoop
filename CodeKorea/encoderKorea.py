@@ -3,7 +3,7 @@ import time
 
 
 class Encoder:
-   #encoder1 = Encoder(27, 17, valueChanged)
+   #encoder1 = Encoder(27, valueChanged)
    
     def __init__(self, pin, callback=None):
         self.pin = pin
