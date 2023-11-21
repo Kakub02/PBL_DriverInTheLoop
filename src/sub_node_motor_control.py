@@ -17,6 +17,9 @@ motor_in3 = 23
 motor_in4 = 24
 motor_enb = 25
 
+#encoder
+encoder_pin = 1
+
 
 # Set GPIO pin numbers for encoder
 #Encoder 1
