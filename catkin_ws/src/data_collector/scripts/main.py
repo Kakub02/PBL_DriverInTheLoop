@@ -3,7 +3,7 @@ import rospy
 import math
 
 from std_msgs.msg import String, Float32, Bool, Int32
-from geometry_msgs.msg import Imu
+from sensor_msgs.msg import Imu
 
 
 #pobieramy CarlaEgoVehicleControl - steer
@@ -22,7 +22,7 @@ class MainNode:
         self.current_reverse_pub = rospy.Publisher("/our_msg/reverse", Bool, queue_size=10)
         self.current_roll_deg_pub = rospy.Publisher("/our_msg/roll", Float32, queue_size=10)
         self.current_pitch_deg_pub = rospy.Publisher("/our_msg/pitch", Float32, queue_size=10)
-        self.current_steer_callback = rospy.Publisher("/our_msg/steer")
+        self.current_steer_pub= rospy.Publisher("/our_msg/steer", Float32, queue_size=10)
 
     def current_speed_callback(self, msg):
         speed = msg.data
@@ -38,7 +38,7 @@ class MainNode:
     def current_steer_callback(self,msg:CarlaEgoVehicleControl):
         steer = msg.steer #msg.data
         steer = float(steer)
-        if steer < 0:
+        if steer <= 0:
             servo_angle = max(-50, steer * 90 + 90)
         else:
             servo_angle = max(0, min(steer * 90 + 90, 50))
@@ -47,9 +47,9 @@ class MainNode:
 
 
     def current_orientation_callback(self, msg: Imu):
-        orientaion_x = float(msg.orientaion.linear.x)
-        orientaion_y = float(msg.orientaion.linear.y)
-        orientaion_z = float(msg.orientaion.linear.z)
+        orientaion_x = float(msg.linear_acceleration.x)
+        orientaion_y = float(msg.linear_acceleration.y)
+        orientaion_z = float(msg.linear_acceleration.z)
 
         roll, pitch = self.calculate_roll_and_pitch(orientaion_x, orientaion_y, orientaion_z)
 
