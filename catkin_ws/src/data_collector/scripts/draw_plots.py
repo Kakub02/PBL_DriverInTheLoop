@@ -2,7 +2,7 @@
 import rospy
 import matplotlib.pyplot as plt
 from std_msgs.msg import Float32, Bool
-from geometry_msgs.msg import Imu
+from sensor_msgs.msg import Imu
 from carla_msgs.msg import CarlaEgoVehicleControl
 
 class PlottingNode:
@@ -21,11 +21,11 @@ class PlottingNode:
         self.reverse_data = []
 
     def speed_callback(self, msg):
-        speed = msg.data
+        speed = float(msg.data)
         self.speed_data.append(speed)
 
     def steer_callback(self, msg):
-        steer = msg.data
+        steer = float(msg.data)
         self.steer_data.append(steer)
 
     def roll_callback(self, msg):
@@ -41,48 +41,44 @@ class PlottingNode:
         self.reverse_data.append(reverse)
 
     def run(self):
+        #pzlt.ion
         rate = rospy.Rate(50)  # Adjust the rate as needed
         while not rospy.is_shutdown():
             self.plot_data()
+            #plt.pause(0.05)
             rate.sleep()
 
     def plot_data(self):
-        plt.figure(1)
+        fig, axs = plt.subplots(5, 1, sharex=True, figsize=(10, 8))
 
-        plt.subplot(511)
-        plt.plot(self.speed_data, label='Speed')
-        plt.title('Car Data over Time')
-        plt.xlabel('Time')
-        plt.ylabel('Speed')
-        plt.legend()
+        axs[0].plot(self.speed_data, label='Speed')
+        axs[0].set_ylabel('Speed')
+        axs[0].legend()
 
-        plt.subplot(512)
-        plt.plot(self.steer_data, label='Steer Angle')
-        plt.xlabel('Time')
-        plt.ylabel('Steer Angle')
-        plt.legend()
+        axs[1].plot(self.steer_data, label='Steer Angle')
+        axs[1].set_ylabel('Steer Angle')
+        axs[1].legend()
 
-        plt.subplot(513)
-        plt.plot(self.roll_data, label='Roll')
-        plt.xlabel('Time')
-        plt.ylabel('Roll')
-        plt.legend()
+        axs[2].plot(self.roll_data, label='Roll')
+        axs[2].set_ylabel('Roll')
+        axs[2].legend()
 
-        plt.subplot(514)
-        plt.plot(self.pitch_data, label='Pitch')
-        plt.xlabel('Time')
-        plt.ylabel('Pitch')
-        plt.legend()
+        axs[3].plot(self.pitch_data, label='Pitch')
+        axs[3].set_ylabel('Pitch')
+        axs[3].legend()
 
-        plt.subplot(515)
-        plt.plot(self.reverse_data, label='Reverse')
-        plt.xlabel('Time')
-        plt.ylabel('Reverse')
-        plt.legend()
+        axs[4].plot(self.reverse_data, label='Reverse')
+        axs[4].set_xlabel('Time')
+        axs[4].set_ylabel('Reverse')
+        axs[4].legend()
 
         plt.tight_layout()
         plt.show()
 
 if __name__ == "__main__":
-    plotting_node = PlottingNode()
-    plotting_node.run()
+    try:
+        plotting_node = PlottingNode()
+        plotting_node.run()
+    finally:
+            plt.close()
+        
