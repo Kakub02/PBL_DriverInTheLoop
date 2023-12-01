@@ -1,8 +1,10 @@
 class PIDController:
     def __init__(self, kp, ki, kd, upper_limit, lower_limit):
+
         self.kp = kp
         self.ki = ki
         self.kd = kd
+
         self.upper_limit = upper_limit
         self.lower_limit = lower_limit
         #self.previousError = 0
@@ -19,8 +21,8 @@ class PIDController:
         
         if cv >= self.upper_limit:
             cv = self.upper_limit
-            self.integral_sum = self.integral_sum - error
+            self.integral_sum -= error
         elif cv <= self.lower_limit:
             cv = self.lower_limit
-            self.integral_sum = self.integral_sum - error
+            self.integral_sum -= error
         return cv
