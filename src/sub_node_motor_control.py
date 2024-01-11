@@ -37,31 +37,47 @@ kd=0.01
 # Set maximum speed in kmph
 max_speed = 60
 
-class Motor_Control(): # TODO main PID loop as in subscriber_node.py
+ENA = 26
+IN1 = 19
+IN2 = 13
+IN3 = 6
+IN4 = 5
+ENB = 0
 
-    def communication(self):
-            # Innit Sub
-        rospy.Subscriber('/our_msg/speed', Float32, self.callback_speed)
-        rospy.Subscriber('/our_msg/reverse', Bool, self.callback_reverse)
+min_speed = -30.0
+max_speed = 30.0
+min_duty_cycle = 0
+max_duty_cycle = 100
 
-    def callback_speed(msg):
-        speed = float(msg.data)
+class Motor_Control():
+    def __init__(self):
+        self.encoder = Encoder(27)
+        self.PID_motor = PIDController(1, 0.1, 0, 0, 0.8)
 
-    def callback_reverse(msg):
-        reverse = bool(msg.data)
+        rospy.init_node('motor_controller', anonymous=True)
+        rospy.Subscriber("/carla/ego_vehicle/speedometer", Float32, self.speed_callback)
+        rospy.spin()
 
-    def run(self):
-        self.communication()
+    def speed_callback(self, data):
+        speed = data.data
+        rospy.loginfo("Get Speed : {}".format(speed))
 
-        loop = rospy.Rate(10.0) # frequency in Hz
+    def calculate_duty_cycle(self, speed):
+        
+        # 입력 속도를 min_speed와 max_speed 사이로 클리핑합니다.
+        speed = abs(max(min(speed, max_speed), min_speed))
+        print("abs speed: ", speed)
+        set_point_speed_fraction = speed / max_speed
+        print("setpoint fraction: ", set_point_speed_fraction)
+        real_speed_fraction = self.encoder.getRealSpeed()
+        print("real fraction: ", real_speed_fraction)
+        duty_cycle = 100 * self.PID_motor.calculate(set_point_speed_fraction, real_speed_fraction)
+    
+        print("duty cycle : ", duty_cycle)
+        return duty_cycle
 
-        while not rospy.is_shutdown():
-        #tutaj będziemy sterować silnikiem
-                
-            loop.sleep()
-
-
-if __name__ == "__main__":
-    rospy.init_node("Motor_node", anonymous=True)
-    motor_Control = Motor_Control()
-    motor_Control.run()
+if __name__ == '__main__':
+    try:
+        motor_control = Motor_Control()
+    except rospy.ROSInterruptException:
+        pass
