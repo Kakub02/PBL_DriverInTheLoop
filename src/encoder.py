@@ -67,30 +67,8 @@ class Encoder:
                     if self.callback is not None:
                         self.callback(self.value, self.direction)
                         
-        # currentTime = time.time()
-        # if prevTime != None:
-        #     deltaTime = float((currentTime-prevTime)/1.0e6)
-        #     velocity = (self.value - prevPos)/deltaTime
-        #     # 1920 = 16 impulsow razy przekladnia 120:1, 32,5 = srednica kola, 60 = 60s -> 1min
-        #     self.currentRPM = float(velocity/(1920*32.5)*60.0) #chyba tak powinno byc max rpm to 160
-        
-        # prevPos = self.value
-        # prevTime = currentTime
         self.state = newState
         self.transitions += 1  # Increment transitions for speed calculation
-
-
-        # currentTime = time.time()
-        # if prevTime != None:
-        #     deltaTime = float((currentTime - prevTime) / 1.0e6)
-        #     velocity = (self.value - prevPos) / deltaTime
-        #     # 1920 = 16 impulsow razy przekladnia 120:1, 32,5 = srednica kola, 60 = 60s -> 1min
-        #     self.currentRPM = float(
-        #         velocity / (1920 * 32.5) * 60.0
-        #     )  # chyba tak powinno byc max rpm to 160
-
-        # prevPos = self.value
-        # prevTime = currentTime
 
     def getRealSpeed(self):
         currentTime = time.time()
