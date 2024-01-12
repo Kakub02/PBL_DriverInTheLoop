@@ -1,2 +1,0 @@
-dil_controller:dil_servo_controller
--DCATKIN_DEVEL_PREFIX=/home/jakub/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/jakub/catkin_ws/install -G Unix Makefiles
