@@ -3,20 +3,17 @@ import time
 
 
 class Encoder:
-   #encoder1 = Encoder(27, 17, valueChanged)
+   #encoder1 = Encoder(27, 17)
    
-    def __init__(self, leftPin, rightPin, callback=None):
+    def __init__(self, leftPin, rightPin):
         self.leftPin = leftPin
         self.rightPin = rightPin
         self.value = 0
         self.state = "00"
         self.direction = None
-        self.callback = callback
-        # self.currentRPM = 0
         self.previousTime = time.time()
-        self.transitions = 0  # Number of transitions since the last speed calculation
         self.maxMotorSpeedRPM = 150  # Maximum speed of the motor in RPM
-        #----Pololu moze byc 100rpm----#
+        self.pulsesPerRevolution = 1920
 
         GPIO.setup(self.leftPin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         GPIO.setup(self.rightPin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
@@ -68,7 +65,6 @@ class Encoder:
                         self.callback(self.value, self.direction)
                         
         self.state = newState
-        self.transitions += 1  # Increment transitions for speed calculation
 
     def getRealSpeed(self):
         currentTime = time.time()
@@ -78,22 +74,15 @@ class Encoder:
             return 0.0
 
         # Calculate speed in transitions per second
-        speedTransactionsPerSecond = self.transitions / timeElapsed
+        speedTransactionsPerSecond = self.value / timeElapsed
 
         # Convert speed to RPM
-        pulsesPerRevolution = 1920 #In future 6400?
-        currentSpeedRPM = (speedTransactionsPerSecond * 60) / pulsesPerRevolution
+        currentSpeedRPM = (speedTransactionsPerSecond * 60) / self.pulsesPerRevolution
 
         # Calculate the fraction of the speed relative to the maximum motor speed
         fraction = currentSpeedRPM / self.maxMotorSpeedRPM
 
-        self.transitions = 0
+        self.value = 0
         self.previousTime = currentTime
 
         return fraction
-
-    def getValue(self):
-        return self.value
-
-    def getDirection(self):
-        return self.direction
