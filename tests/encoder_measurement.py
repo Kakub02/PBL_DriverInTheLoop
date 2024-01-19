@@ -28,7 +28,6 @@ class DC_Motor:
 
     def __del__(self):
         self.pwm.stop()
-        GPIO.cleanup() # not sure if it should be here
 
     def set_speed(self, setPointSpeed=0, reverse=0):
         if reverse == 0:
@@ -54,6 +53,10 @@ def measure_encoder():
 
     encoder = Encoder_raw(left_pin, right_pin)
 
+    avg_enable = False
+    total_value = 0
+    num_of_readings = 0
+
     start_time = time.time()
     elapsed_time = 0
     data_encoder = []
@@ -62,8 +65,13 @@ def measure_encoder():
 
     try:
         for loop_count in range(number_of_measurements):
-            print(loop_count)
-            encoder_value = encoder.getSpeed()
+            motor1.set_speed(setpoint_pwm)
+            encoder_value = encoder.getValueSinceLastRead()
+            print(loop_count, ": encoder_value = ", encoder_value)
+
+            if avg_enable == True:
+                total_value += encoder_value
+                num_of_readings += 1
 
             data_encoder.append({"time": elapsed_time, "value": encoder_value})
             data_setpoint.append({"time": elapsed_time, "value": setpoint_pwm})
@@ -72,15 +80,24 @@ def measure_encoder():
             time.sleep(1 / frequency)
 
             elapsed_time = time.time() - start_time
-            if loop_count % 50 == 0:
-                setpoint_pwm += 10
-                motor1.set_speed(setpoint_pwm)
+
+            if loop_count == 50:
+                setpoint_pwm = 100
+                print("setpoint_pwm = ", setpoint_pwm)
+                #motor1.set_speed(setpoint_pwm)
+            if loop_count == 70:
+                avg_enable = True
+                print("measuring avg counts")
+        
 
     except KeyboardInterrupt:
         pass  # Continue with plotting when the user interrupts the script
+    
+    print("Average maximum value of encoder when PWM set to 100:      ", total_value/num_of_readings)
 
-    #draw_plot(data_encoder, "Time vs Encoder", "Time (s)", "Encoder value", ["value"])
-    #draw_plot(data_setpoint, "Time vs Setpoint", "Time (s)", "Setpoint", ["value"])
+    motor1.stop_motor()
+    draw_plot(data_encoder, "Time vs Encoder", "Time (s)", "Encoder value", ["value"])
+    draw_plot(data_setpoint, "Time vs Setpoint", "Time (s)", "Setpoint", ["value"])
     draw_plot(data_both, "Time vs Encoder and setpoint", "Time (s)", "Values", ["encoder_value", "setpoint_pwm"])
 
 

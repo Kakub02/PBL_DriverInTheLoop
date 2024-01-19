@@ -84,5 +84,10 @@ class Encoder_raw:
 
         return val_since_last_read / time_elapsed
 
+    def getValueSinceLastRead(self):
+        val_since_last_read = self.value - self.prev_value
+        self.prev_value = self.value
+        return val_since_last_read
+
     def getValue(self):
         return self.value
