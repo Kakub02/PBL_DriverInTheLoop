@@ -63,7 +63,7 @@ def measure_encoder():
     try:
         for loop_count in range(number_of_measurements):
             print(loop_count)
-            encoder_value = encoder.getValue()
+            encoder_value = encoder.getSpeed()
 
             data_encoder.append({"time": elapsed_time, "value": encoder_value})
             data_setpoint.append({"time": elapsed_time, "value": setpoint_pwm})
@@ -79,8 +79,8 @@ def measure_encoder():
     except KeyboardInterrupt:
         pass  # Continue with plotting when the user interrupts the script
 
-    draw_plot(data_encoder, "Time vs Encoder", "Time (s)", "Encoder value", ["value"])
-    draw_plot(data_setpoint, "Time vs Setpoint", "Time (s)", "Setpoint", ["value"])
+    #draw_plot(data_encoder, "Time vs Encoder", "Time (s)", "Encoder value", ["value"])
+    #draw_plot(data_setpoint, "Time vs Setpoint", "Time (s)", "Setpoint", ["value"])
     draw_plot(data_both, "Time vs Encoder and setpoint", "Time (s)", "Values", ["encoder_value", "setpoint_pwm"])
 
 

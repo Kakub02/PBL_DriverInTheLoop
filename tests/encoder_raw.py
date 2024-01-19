@@ -2,6 +2,7 @@
 # you can configure a callback which will be called whenever the value changes.
 
 import RPi.GPIO as GPIO
+import time
 
 class Encoder_raw:
 
@@ -9,6 +10,8 @@ class Encoder_raw:
         self.leftPin = leftPin
         self.rightPin = rightPin
         self.value = 0
+        self.prev_value = 0
+        self.prev_time = time.time()
         self.state = '00'
         self.direction = None
         self.callback = callback
@@ -62,6 +65,24 @@ class Encoder_raw:
                         self.callback(self.value, self.direction)
                 
         self.state = newState
+
+    def startMeasuring(self):
+        self.prev_time = time.time()
+        self.value = 0
+        self.prev_value = 0
+
+    def getSpeed(self): #get average speed since last reading
+        current_time = time.time()
+        val_since_last_read = self.value - self.prev_value
+        time_elapsed = current_time - self.prev_time
+
+        if time_elapsed == 0:
+            return 0
+
+        self.prev_time = current_time
+        self.prev_value = self.value
+
+        return val_since_last_read / time_elapsed
 
     def getValue(self):
         return self.value
