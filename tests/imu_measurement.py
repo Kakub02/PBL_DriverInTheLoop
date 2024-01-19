@@ -68,10 +68,10 @@ def measure_imu():
     except KeyboardInterrupt:
         pass  # Continue with plotting when the user interrupts the script
 
-    draw_plot(data_x, "Time vs Accelerometer X", "Time (s)", "Accel X (chuj wie jaka jednostka)", ["Accel X"])
-    draw_plot(data_y, "Time vs Accelerometer Y", "Time (s)", "Accel Y (chuj wie jaka jednostka)", ["Accel Y"])
-    draw_plot(data_x_setpoint, "Time vs Accelerometer X and setpoint_roll_pwm", "Time (s)", "Values", ["Accelerometer X", "setpoint_roll_pwm"])
-    draw_plot(data_y_setpoint, "Time vs Accelerometer Y and setpoint_roll_pwm", "Time (s)", "Values", ["Accelerometer Y", "setpoint_pitch_pwm"])
+    draw_plot(data_x, "Time vs Accelerometer X", "Time (s)", "Accel X (chuj wie jaka jednostka)", ["value"])
+    draw_plot(data_y, "Time vs Accelerometer Y", "Time (s)", "Accel Y (chuj wie jaka jednostka)", ["value"])
+    draw_plot(data_x_setpoint, "Time vs Accelerometer X and setpoint_roll_pwm", "Time (s)", "Values", ["imu_x_value", "setpoint_roll_pwm"])
+    draw_plot(data_y_setpoint, "Time vs Accelerometer Y and setpoint_roll_pwm", "Time (s)", "Values", ["imu_y_value", "setpoint_pitch_pwm"])
 
 
 def draw_plot(data, title, x_label, y_label, legends):

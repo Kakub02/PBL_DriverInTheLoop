@@ -79,9 +79,9 @@ def measure_encoder():
     except KeyboardInterrupt:
         pass  # Continue with plotting when the user interrupts the script
 
-    draw_plot(data_encoder, "Time vs Encoder", "Time (s)", "Encoder value", ["encoder_value"])
-    draw_plot(data_setpoint, "Time vs Setpoint", "Time (s)", "Setpoint", ["setpoint_pwm"])
-    draw_plot(data_both, "Time vs Encoder and setpoint", "Time (s)", "Values", ["encoder_value", "setpoint_speed"])
+    draw_plot(data_encoder, "Time vs Encoder", "Time (s)", "Encoder value", ["value"])
+    draw_plot(data_setpoint, "Time vs Setpoint", "Time (s)", "Setpoint", ["value"])
+    draw_plot(data_both, "Time vs Encoder and setpoint", "Time (s)", "Values", ["encoder_value", "setpoint_pwm"])
 
 
 def draw_plot(data, title, x_label, y_label, legends):
