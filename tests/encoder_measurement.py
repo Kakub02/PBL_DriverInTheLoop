@@ -3,13 +3,13 @@ from encoder_raw import Encoder_raw
 import matplotlib.pyplot as plot
 import RPi.GPIO as GPIO
 
-left_pin = 69
-right_pin = 69  # dostosowac piny
+left_pin = 16
+right_pin = 12  # dostosowac piny
 
 
-motor_in1 = 23
-motor_in2 = 24
-motor_ena = 25
+motor_in1 = 5
+motor_in2 = 6
+motor_ena = 26
 
 class DC_Motor:
     # motor1 = Motor(23, 24, 25)
@@ -79,8 +79,8 @@ def measure_encoder():
     except KeyboardInterrupt:
         pass  # Continue with plotting when the user interrupts the script
 
-    draw_plot(data_encoder, "Time vs Encoder", "Time (s)", "Encoder value")
-    draw_plot(data_setpoint, "Time vs Setpoint", "Time (s)", "Setpoint")
+    draw_plot(data_encoder, "Time vs Encoder", "Time (s)", "Encoder value", ["encoder_value"])
+    draw_plot(data_setpoint, "Time vs Setpoint", "Time (s)", "Setpoint", ["setpoint_pwm"])
     draw_plot(data_both, "Time vs Encoder and setpoint", "Time (s)", "Values", ["encoder_value", "setpoint_speed"])
 
 
