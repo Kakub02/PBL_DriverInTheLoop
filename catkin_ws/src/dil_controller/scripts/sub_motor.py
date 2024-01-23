@@ -32,12 +32,15 @@ motor_enb = 26
 # ki=0.1
 # kd=0.01
 
-# Set maximum speed in kmph
+# Set border values
+min_speed = 0.1
 max_speed = 60
-
+min_duty_cycle = 0
+max_duty_cycle = 100
 
 def speed_to_duty_cycle(speed):
-    return speed
+    
+    return speed / max_speed * max_duty_cycle
 
 
 class DC_Motor:
@@ -57,16 +60,15 @@ class DC_Motor:
 
     def __del__(self):
         self.pwm.stop()
-        GPIO.cleanup() # not sure if it should be here
 
-    def set_speed(self, setPointSpeed=0, reverse=0):
+    def set_speed(self, setPointPWM=0, reverse=0):
         if reverse == 0:
             GPIO.output(self.in1, GPIO.HIGH)
             GPIO.output(self.in2, GPIO.LOW)
         elif reverse == 1:
             GPIO.output(self.in1, GPIO.LOW)
             GPIO.output(self.in2, GPIO.HIGH)
-        self.pwm.ChangeDutyCycle(speed_to_duty_cycle(setPointSpeed))
+        self.pwm.ChangeDutyCycle(speed_to_duty_cycle(setPointPWM))
 
     def stop_motor(self):
         GPIO.output(self.in1, GPIO.LOW)
@@ -89,7 +91,7 @@ class Motor_Control:
         self.speed = float(msg.data)
         if self.speed > max_speed:
             self.speed = max_speed
-        elif self.speed < 0.1:
+        elif self.speed < min_speed:
             self.speed = 0
         print(self.speed)
 

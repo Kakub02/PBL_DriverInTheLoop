@@ -5,7 +5,7 @@ from std_msgs.msg import Float32
 import RPi.GPIO as GPIO
 from motor import Motor
 from pid_controller import PIDController
-from encoder import Encoder
+from tests.encoder_test import Encoder
 
 
 # Set GPIO pin numbers for motor

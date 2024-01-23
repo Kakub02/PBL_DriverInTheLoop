@@ -8,7 +8,6 @@ import RPi.GPIO as GPIO
 from std_msgs.msg import String, Float32, Bool
 
 # from sensor_msgs.msg import Imu
-# import RPi.GPIO as GPIO
 # from time import sleep
 # from pid_controller import PIDController
 # from mpu6050 import mpu6050
@@ -52,7 +51,6 @@ class Servo:
     def __del__(self):
         self.pwm.ChangeDutyCycle(7)
         self.pwm.stop()
-        GPIO.cleanup() # not sure if it should be here
 
     def set_duty_cycle(self, duty_cycle):
         self.pwm.ChangeDutyCycle(duty_cycle)
