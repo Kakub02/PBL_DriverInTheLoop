@@ -1,5 +1,6 @@
 import time
 from encoder import Encoder
+from pid import PID
 import matplotlib.pyplot as plot
 import RPi.GPIO as GPIO
 
@@ -47,6 +48,85 @@ class DC_Motor:
         self.pwm.ChangeDutyCycle(0)
 
 
+def measure_max_encoder_speed(number_of_iterations = 1000, start_measuring_iteration = 200, frequency = 100):
+    motor1 = DC_Motor(motor_in1, motor_in2, motor_ena)
+    encoder = Encoder(left_pin, right_pin)
+
+    setpoint_pwm = 100
+
+    total_value = 0
+    num_of_readings = 0
+
+    for loop_count in range(number_of_iterations):
+        motor1.set_speed(setpoint_pwm)
+        encoder_value = encoder.getValueSinceLastRead()
+        #encoder_value_per_second = encoder.getSpeed()
+        print(loop_count, ": encoder_value = ", encoder_value)
+
+        if loop_count >= start_measuring_iteration:
+            total_value += encoder_value
+            num_of_readings += 1
+        
+        time.sleep(1 / frequency)
+
+    return total_value/num_of_readings
+
+def test_pid():
+    motor1 = DC_Motor(motor_in1, motor_in2, motor_ena)
+    encoder = Encoder(left_pin, right_pin)
+
+    setpoint_pwm = 50
+
+    pid = PID(5, 0.01, 0.1, setpoint=setpoint_pwm)
+    pid.output_limits = (0, 100) # pwm borders
+
+    frequency = 100 # in Hz
+    number_of_iterations = 1000
+
+    start_time = time.time()
+    # last_time = start_time
+
+    elapsed_time = 0
+    data_encoder = []
+    data_setpoint = []
+    data_pid_output = []
+    data_both = []
+
+    encoder.startMeasuring()
+
+    for loop_count in range(number_of_iterations):
+        pid.setpoint = setpoint_pwm
+        encoder_value = encoder.getValueSinceLastRead()
+        #encoder_value_per_second = encoder.getSpeed()
+
+        #enc_reading_per_second_in_pwm = encoder_value_per_second/max_encoder_value_per_second * 100
+        enc_reading_in_pwm = encoder_value/max_encoder_value * 100
+
+        pid_pwm = pid(encoder_value)
+
+        motor1.set_speed(pid_pwm)
+        print(loop_count, " | encoder_value = ", encoder_value, " | enc_in_pwm = ", enc_reading_in_pwm, " | pid_calculated_val = ", pid_pwm)
+
+        data_encoder.append({"time": elapsed_time, "value": enc_reading_in_pwm})
+        data_setpoint.append({"time": elapsed_time, "value": setpoint_pwm})
+        data_pid_output.append({"time": elapsed_time, "value": pid_pwm})
+        # data_both.append({"time": elapsed_time, "encoder_value": enc_reading_in_pwm, "setpoint_pwm": setpoint_pwm})
+        data_both.append({"time": elapsed_time, "encoder_value": enc_reading_in_pwm, "setpoint_pwm": setpoint_pwm, "pid_output": pid_pwm})
+
+        time.sleep(1 / frequency)
+
+        elapsed_time = time.time() - start_time
+    
+
+ 
+    motor1.stop_motor()
+    draw_plot(data_encoder, "Time vs Encoder", "Time (s)", "Encoder value", ["value"])
+    draw_plot(data_setpoint, "Time vs Setpoint", "Time (s)", "Setpoint", ["value"])
+    draw_plot(data_pid_output, "Time vs PID Output", "Time (s)", "PID Output", ["value"])
+
+    # draw_plot(data_both, "Time vs Encoder and setpoint", "Time (s)", "Values", ["encoder_value", "setpoint_pwm"])
+    draw_plot(data_both, "Time vs Encoder, Setpoint, and PID Output", "Time (s)", "Values", ["encoder_value", "setpoint_pwm", "pid_output"])
+
 def measure_encoder():
     motor1 = DC_Motor(motor_in1, motor_in2, motor_ena)
     setpoint_pwm = 0
@@ -55,10 +135,6 @@ def measure_encoder():
     number_of_measurements = 1000
 
     encoder = Encoder(left_pin, right_pin)
-
-    avg_enable = False
-    total_value = 0
-    num_of_readings = 0
 
     start_time = time.time()
     elapsed_time = 0
@@ -73,10 +149,6 @@ def measure_encoder():
             #encoder_value_per_second = encoder.getSpeed()
             print(loop_count, ": encoder_value = ", encoder_value)
 
-            if avg_enable == True:
-                total_value += encoder_value
-                num_of_readings += 1
-            
             #enc_reading_per_second_in_pwm = encoder_value_per_second/max_encoder_value_per_second * 100
             enc_reading_in_pwm = encoder_value/max_encoder_value * 100
             data_encoder.append({"time": elapsed_time, "value": enc_reading_in_pwm})
@@ -91,16 +163,11 @@ def measure_encoder():
                 setpoint_pwm = 50
                 print("setpoint_pwm = ", setpoint_pwm)
                 #motor1.set_speed(setpoint_pwm)
-            if loop_count == 100:
-                avg_enable = True
-                print("measuring avg counts")
         
 
     except KeyboardInterrupt:
         pass  # Continue with plotting when the user interrupts the script
     
-    print("Average maximum value of encoder when PWM set to 100:      ", total_value/num_of_readings)
-
     motor1.stop_motor()
     #draw_plot(data_encoder, "Time vs Encoder", "Time (s)", "Encoder value", ["value"])
     #draw_plot(data_setpoint, "Time vs Setpoint", "Time (s)", "Setpoint", ["value"])

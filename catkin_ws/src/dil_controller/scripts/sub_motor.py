@@ -39,9 +39,7 @@ min_duty_cycle = 0
 max_duty_cycle = 100
 
 def speed_to_duty_cycle(speed):
-    
     return speed / max_speed * max_duty_cycle
-
 
 class DC_Motor:
     # motor1 = Motor(23, 24, 25)
