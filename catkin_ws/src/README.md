@@ -36,25 +36,10 @@ source devel/setup.bash
 ```
 
 # It's time to start the machine.
-At the very beginning, enter the folder with the Carla Simulator, source to Ros and devel and run CarlaUE4.sh
+At the very beginning, enter the folder with the launch files and run launch.py
 
 ```
-source path_to_/opt/ros/noetic/setup.bash
-source path_to_/devel/setup.bash
-
-cd path_to_carla
-
-./CarlaUE4.sh
-```
-
-Open one terminal and start roscore:
-```
-roscore
-```
-Now, in other terminal:
-Go to the ROS-bridge package, source it, and start the ROS-bridge:
-```
-roslaunch carla_ros_bridge carla_ros_bridge.launch
+python3 launch.py
 ```
 
 To check if it's working, you can use the command provided below and check the list of topics published by Carla-Ros-Bridge:
@@ -66,17 +51,6 @@ To chceck topics you can use:
 rostopic echo /our/topic
 ```
 
-# Start the node on the PC.
-Now, go to our Catkin workspace, navigate to data_collector/scripts, source the setup.bash as before, and then start our node:
-```
-cd path_to_catkin/catkin_ws/data_collector_scripts
-source /opt/ros/noetic/setup.bash
-source path_to/devel/setup.bash
-
-!important
-rosrun <package-name> <script-name>
-rosrun data_collector main.py
-```
 Here, our node is already running and will transmit data to the Raspberry Pi in the future (we don't have subscribers yet). To check if it's working, use:
 ```
 rostopic list
@@ -91,3 +65,10 @@ If you see topics like:
 ```
 It means our node is working.
 
+# Important commands
+```!important
+rostopic list
+rostopic echo /our/topic
+rosrun <package-name> <script-name>
+rosrun data_collector main.py
+```
