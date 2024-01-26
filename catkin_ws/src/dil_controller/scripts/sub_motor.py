@@ -23,9 +23,9 @@ left_encoder_pin = 16
 right_encoder_pin = 12
 
 # Set PID parameters
-kp=1.0
-ki=0.1
-kd=0.01
+kp = 0.000136
+ti = 7.0263
+td = 0
 
 # Set border values
 min_speed_kmh = 0.1
@@ -370,7 +370,7 @@ class Motor_Control:
         self.motor1 = DC_Motor(motor_in1, motor_in2, motor_ena)
         self.motor2 = DC_Motor(motor_in3, motor_in4, motor_enb)
         self.encoder = Encoder(left_encoder_pin,right_encoder_pin)
-        self.pid = PID(kp, ki, kd)
+        self.pid = PID(kp, ti, td)
         self.pid.output_limits = (min_pwm, max_pwm)
 
         self.speed = 0

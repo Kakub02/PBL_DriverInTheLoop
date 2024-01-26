@@ -2,7 +2,7 @@ import time
 
 # from encoder import Encoder
 from enc_test import Encoder_
-from catkin_ws.src.dil_controller.scripts.pid import PID
+from pid import PID
 import matplotlib.pyplot as plot
 import pandas as pd
 import RPi.GPIO as GPIO
@@ -85,7 +85,7 @@ def test_pid(number_of_iterations=1000):
     motor1 = DC_Motor(motor_in1, motor_in2, motor_ena)
     encoder = Encoder_(left_pin, right_pin)
 
-    pid = PID(1, 0, 0, setpoint=setpoint_pwm)
+    pid = PID(0.000136, 7.0263, 0, setpoint=setpoint_pwm)
     pid.output_limits = (0, 100)  # pwm borders
 
     setpoint_pwm = 0
