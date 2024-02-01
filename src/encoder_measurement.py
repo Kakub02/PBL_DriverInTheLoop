@@ -2,7 +2,8 @@ import time
 
 # from encoder import Encoder
 from enc_test import Encoder_
-from pid import PID
+# from pid import PID
+from pid_controller import PID_controller
 import matplotlib.pyplot as plot
 import pandas as pd
 import RPi.GPIO as GPIO
@@ -85,10 +86,9 @@ def test_pid(number_of_iterations=1000):
     motor1 = DC_Motor(motor_in1, motor_in2, motor_ena)
     encoder = Encoder_(left_pin, right_pin)
 
-    pid = PID(0.000136, 7.0263, 0, setpoint=setpoint_pwm)
-    pid.output_limits = (0, 100)  # pwm borders
+    pid = PID_controller(0.263679449, 4.22, 0.8862, 1, 0, 100, -100, 250, 1/frequency)
 
-    setpoint_pwm = 0
+    setpoint_speed = 0 * max_encoder_speed
 
     elapsed_time = 0
     data_encoder = []
@@ -99,23 +99,23 @@ def test_pid(number_of_iterations=1000):
     try:
         for loop_count in range(number_of_iterations):
             t1 = time.time()
-            pid.setpoint = setpoint_pwm * frequency / 100
 
             encoder_value = encoder.getValue()
             encoder.clearValue()
 
             real_speed = encoder_value * frequency
-            pid_pwm = pid(real_speed)
+            pid_pwm = pid.update(setpoint_speed, real_speed)
             motor1.set_speed(pid_pwm)
-            print(loop_count, " | real_speed = ", real_speed, " | pid_calculated_val = ", pid_pwm)
+            print(loop_count, " | setpoint_speed = ", setpoint_speed, " | real_speed = ", real_speed, " | pid_output = ", pid_pwm)
             
             #data_encoder.append({"time": t1, "value": real_speed})
             #data_setpoint.append({"time": t1, "value": setpoint_pwm*max_encoder_speed/100})
-            data_both.append({"time": t1, "encoder_speed": real_speed, "setpoint_speed": setpoint_pwm*max_encoder_speed/100})
+            data_both.append({"time": t1, "encoder_speed": real_speed, "setpoint_speed": setpoint_speed})
 
             if loop_count == 100:
-                setpoint_pwm = 50
-                print("setpoint_pwm = ", setpoint_pwm)
+                setpoint_speed = 0.5 * max_encoder_speed
+            if loop_count == 700:
+                setpoint_speed = 0.8 * max_encoder_speed
 
             sleep_time = 1 / frequency - (time.time() - t1)
             if sleep_time > 0:
