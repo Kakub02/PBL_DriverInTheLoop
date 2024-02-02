@@ -1,89 +1,63 @@
 import time
+import matplotlib.pyplot as plt
+import pandas as pd
+import os
+
+from adafruit_servokit import ServoKit
 from mpu6050 import mpu6050
-import matplotlib.pyplot as plot
-import RPi.GPIO as GPIO
+from pid_controller import PID_controller
+from encoder_measurement import createXLSX, draw_plot
 
-# Set GPIO pin numbers for servos
-# Servo roll (boki)
-roll_servo_pin = 17
-# Servo pitch
-pitch_servo_pin = 27
+roll_pin = 0
+pitch_pin = 1
 
-class Servo:
-    # servo = Servo(23)
-    def __init__(self, pwm_pin):
-        self.pwm_pin = pwm_pin
+frequency = 50  # in Hz
 
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.pwm_pin, GPIO.OUT)
-        self.pwm = GPIO.PWM(self.pwm_pin, 50)
-        self.pwm.start(0)
-
-    def __del__(self):
-        self.pwm.ChangeDutyCycle(7)
-        self.pwm.stop()
-        GPIO.cleanup() # not sure if it should be here
-
-    def set_duty_cycle(self, duty_cycle):
-        self.pwm.ChangeDutyCycle(duty_cycle)
-
-def measure_imu():
-    roll_servo = Servo(roll_servo_pin)
-    pitch_servo = Servo(pitch_servo_pin)
-    setpoint_roll_pwm = 5
-    setpoint_pitch_pwm = 5
-
-    frequency = 10  # in Hz
-    number_of_measurements = 250
-
+def measure_imu(number_of_iterations=1000):
+    pca9685 = ServoKit(channels=16, address=0x40)  # PCA9685
     mpu = mpu6050(0x68)
 
-    start_time = time.time()
-    elapsed_time = 0
-    data_x = []
-    data_y = []
-    data_x_setpoint = []
-    data_y_setpoint = []
+    setpoint_roll_angle = 90
+    setpoint_pitch_angle = 90
+
+    data_all = []
+    plt.ion()  # Enable interactive mode for real-time plotting
 
     try:
-        for loop_count in range(number_of_measurements):
-            roll_servo.set_duty_cycle(setpoint_roll_pwm)
-            pitch_servo.set_duty_cycle(setpoint_pitch_pwm)
-            print(loop_count)
+        for loop_count in range(number_of_iterations):
+            start_time = time.time()
+
             accel_data = mpu.get_accel_data()
+            gyro_data = mpu.get_gyro_data()
 
-            data_x.append({"time": elapsed_time, "value": accel_data["x"]})
-            data_y.append({"time": elapsed_time, "value": accel_data["y"]})
-            data_x_setpoint.append({"time": elapsed_time, "imu_x_value": accel_data["x"], "setpoint_roll_pwm": setpoint_roll_pwm})
-            data_y_setpoint.append({"time": elapsed_time, "imu_y_value": accel_data["y"], "setpoint_pitch_pwm": setpoint_pitch_pwm})
+            pca9685.servo[roll_pin].angle = setpoint_roll_angle 
+            pca9685.servo[pitch_pin].angle = setpoint_pitch_angle
 
-            time.sleep(1 / frequency)
+            print(loop_count, "| acc_x = ", accel_data["x"], "| acc_y = ", accel_data["y"], "| acc_z = ", accel_data["z"], "| gyr_x = ", gyro_data["x"],"| gyr_y = ", gyro_data["y"],"| gyr_z = ", gyro_data["z"])
 
-            elapsed_time = time.time() - start_time
-            if loop_count % 100 == 0:
-                setpoint_roll_pwm += 1
-                setpoint_pitch_pwm += 1
-                roll_servo.set_duty_cycle(setpoint_roll_pwm)
-                pitch_servo.set_duty_cycle(setpoint_pitch_pwm)
+
+            data_all.append({"time": start_time, "acc_x": accel_data["x"], "acc_y": accel_data["y"], "acc_z": accel_data["z"], "gyr_x": gyro_data["x"], "gyr_y": gyro_data["y"], "gyr_z": gyro_data["z"]})
+
+            if loop_count == 100:
+                setpoint_roll_angle = 120
+                setpoint_pitch_angle = 120
+                print("sp_pitch = ", setpoint_pitch_angle, "sp_roll = ", setpoint_roll_angle)
+
+
+            draw_plot(data_all, "Time vs Accelerometer and Gyroscope", "Time (s)", "Values", ["acc_x", "acc_y", "acc_z", "gyr_x", "gyr_y", "gyr_z"])
+
+            sleep_time = 1 / frequency - (time.time() - start_time)
+            if sleep_time > 0:
+                time.sleep(sleep_time)
+
     except KeyboardInterrupt:
-        pass  # Continue with plotting when the user interrupts the script
+        pass
+    finally:
+        plt.ioff()  # Turn off interactive mode when done
+        plt.show()
 
-    draw_plot(data_x, "Time vs Accelerometer X", "Time (s)", "Accel X (chuj wie jaka jednostka)", ["value"])
-    draw_plot(data_y, "Time vs Accelerometer Y", "Time (s)", "Accel Y (chuj wie jaka jednostka)", ["value"])
-    draw_plot(data_x_setpoint, "Time vs Accelerometer X and setpoint_roll_pwm", "Time (s)", "Values", ["imu_x_value", "setpoint_roll_pwm"])
-    draw_plot(data_y_setpoint, "Time vs Accelerometer Y and setpoint_roll_pwm", "Time (s)", "Values", ["imu_y_value", "setpoint_pitch_pwm"])
-
-
-def draw_plot(data, title, x_label, y_label, legends):
-    plot.figure()
-    for legend in legends:
-        plot.plot([entry["time"] for entry in data], [entry[legend] for entry in data], marker="o", linestyle="-", label=legend)
-
-    plot.title(title)
-    plot.xlabel(x_label)
-    plot.ylabel(y_label)
-    plot.legend()
-    plot.show()
+    pca9685.servo[roll_pin].angle = 90 
+    pca9685.servo[pitch_pin].angle = 90
 
 if __name__ == "__main__":
     measure_imu()

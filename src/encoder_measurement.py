@@ -86,14 +86,11 @@ def test_pid(number_of_iterations=1000):
     motor1 = DC_Motor(motor_in1, motor_in2, motor_ena)
     encoder = Encoder_(left_pin, right_pin)
 
-    pid = PID_controller(0.263679449, 4.22, 0.8862, 1, 0, 100, -100, 250, 1/frequency)
+    pid = PID_controller(0.1538, 2.263, 0, 1, 0, 100, 0, 250, 1/frequency)
 
     setpoint_speed = 0 * max_encoder_speed
 
     elapsed_time = 0
-    data_encoder = []
-    data_setpoint = []
-    data_elapsedtime = []
     data_both = []
 
     try:
@@ -106,10 +103,9 @@ def test_pid(number_of_iterations=1000):
             real_speed = encoder_value * frequency
             pid_pwm = pid.update(setpoint_speed, real_speed)
             motor1.set_speed(pid_pwm)
+            
             print(loop_count, " | setpoint_speed = ", setpoint_speed, " | real_speed = ", real_speed, " | pid_output = ", pid_pwm)
             
-            #data_encoder.append({"time": t1, "value": real_speed})
-            #data_setpoint.append({"time": t1, "value": setpoint_pwm*max_encoder_speed/100})
             data_both.append({"time": t1, "encoder_speed": real_speed, "setpoint_speed": setpoint_speed})
 
             if loop_count == 100:
@@ -127,10 +123,8 @@ def test_pid(number_of_iterations=1000):
     except KeyboardInterrupt:
         pass  # Continue with plotting when the user interrupts the script
     motor1.stop_motor()
-    #draw_plot(data_encoder, "Time vs Encoder_speed", "Time (s)", "Encoder speed", ["value"])
-    #draw_plot(data_setpoint, "Time vs Setpoint", "Time (s)", "Setpoint", ["value"])
-    #draw_plot(data_elapsedtime, "Time vs elapsed_time", "Time (s)", "elapsed", ["value"])
     draw_plot(data_both, "Time vs Encoder and setpoint", "Time (s)", "Values", ["encoder_speed", "setpoint_speed"])
+    createXLSX(data_both, "dc_with_pid.xlsx")
 
 def measure_encoder(number_of_iterations=1000):
     motor1 = DC_Motor(motor_in1, motor_in2, motor_ena)
@@ -218,10 +212,10 @@ if __name__ == "__main__":
     GPIO.setmode(GPIO.BCM)
 
     # na poczatku to
-    print(measure_max_encoder_speed(2000,400))
+    #print(measure_max_encoder_speed(2000,400))
     # potem to
     #measure_encoder(2000)
     # na koncu to
-    #test_pid(2000)
+    test_pid()
 
     GPIO.cleanup()

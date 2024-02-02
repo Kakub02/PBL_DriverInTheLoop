@@ -1,146 +1,144 @@
 #!/usr/bin/env python3
 
 import rospy
-import RPi.GPIO as GPIO
+from adafruit_servokit import ServoKit
 
-# from servo_control.msg import ServoPosition
-# from carla_msgs.msg import CarlaEgoVehicleControl
 from std_msgs.msg import String, Float32, Bool
 
-# from sensor_msgs.msg import Imu
-# from time import sleep
-# from pid_controller import PIDController
-# from mpu6050 import mpu6050
-
-min_roll_pwm = 5
-max_roll_pwm = 10
-
-min_pitch_pwm = 5
-max_pitch_pwm = 8
-
-min_steer_pwm = 5  # ????????
-max_steer_pwm = 8  # ????????
-
-# Set GPIO pin numbers for servos
-# Servo roll (boki)
-roll_servo_pin = 17
-# Servo pitch
-pitch_servo_pin = 27
-# Servo steer
-# steer_servo_pin = ?
+# from dil_controller_src.mpu6050 import mpu6050
+# from dil_controller_src.pid_controller import PID_controller
 
 
-def pitch_angle_to_duty_cycle(angle):
-    return float((angle + 90) / 18 + 1)
+min_roll_angle = 70
+max_roll_angle = 130
+
+min_pitch_angle = 65
+max_pitch_angle = 120
+
+min_steer_angle = 60  # ????????
+max_steer_angle = 120  # ????????
+
+roll_pin = 0
+pitch_pin = 1
+#steer_pin = 
+
+class PID_controller:
+    # Controller gains 
+    Kp = 0.0
+    Ki = 0.0
+    Kd = 0.0
+
+   	# Derivative low-pass filter time constant
+    tau = 0.0
+
+    # Output limits
+    lower_limit = 0.0
+    upper_limit = 0.0
+
+    # Integrator limits
+    lower_int_limit = 0.0
+    upper_int_limit = 0.0
+
+	# Sample time (in seconds)
+    T = 0.0
+
+    # Controller memory
+    integrator = 0.0
+    previous_error = 0.0 # Required for integrator
+    differentiator = 0.0
+    previous_measurement = 0.0 # Required for differentiator
+
+    def __init__(self, Kp, Ki, Kd, tau, lower_limit, upper_limit, lower_int_limit, upper_int_limit, T) -> None:
+        self.Kp = Kp
+        self.Ki = Ki
+        self.Kd = Kd
+
+        self.tau = tau # 1/2 sekundy
+
+        self.lower_limit = lower_limit
+        self.upper_limit = upper_limit
+
+        self.lower_int_limit = lower_int_limit
+        self.upper_int_limit = upper_int_limit
+        
+        self.T = T
+
+    # Function for calculating actual control value
+    def update(self, setpoint, measurement):
+        
+        # Error signal
+        error = setpoint - measurement
+        
+        # Proportional
+        proportional = self.Kp * error
+    
+        # Integral
+        self.integrator = self.integrator + 0.5 * self.Ki * self.T * (error + self.previous_error)
+
+	    # Anti-wind-up via integrator clamping
+        if (self.integrator > self.upper_int_limit): # -100----200/300
+            self.integrator = self.upper_int_limit
+        elif (self.integrator < self.lower_int_limit):
+            self.integrator = self.lower_int_limit
+
+        # Derivative (band-limited differentiator)
+        # Note: derivative on measurement, therefore minus sign in front of equation!
+        self.differentiator = -(2.0 * self.Kd * (measurement - self.previous_measurement) + (2.0 * self.tau - self.T) * self.differentiator) / (2.0 * self.tau + self.T)
 
 
-def roll_angle_to_duty_cycle(angle):
-    return float((angle + 90) / 18 + 2.5)
+        # Compute output and apply limits
+        output = proportional + self.integrator + self.differentiator
 
+        if (output > self.upper_limit):
+            output = self.upper_limit
+        elif (output < self.lower_limit):
+            output = self.lower_limit
 
-class Servo:
-    # servo = Servo(23)
-    def __init__(self, pwm_pin):
-        self.pwm_pin = pwm_pin
+	    # Store error and measurement for later use
+        self.previous_error = error
+        self.previous_measurement = measurement
 
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.pwm_pin, GPIO.OUT)
-        self.pwm = GPIO.PWM(self.pwm_pin, 50)
-        self.pwm.start(0)
-
-    def __del__(self):
-        self.pwm.ChangeDutyCycle(7)
-        self.pwm.stop()
-
-    def set_duty_cycle(self, duty_cycle):
-        self.pwm.ChangeDutyCycle(duty_cycle)
-
+        return output
 
 class Servo_Control:
     def __init__(self):
         # self.mpu = mpu6050(0x68)
-        # self.PID_servo1 = PIDController(1, 0.1, 0.01)
-        # self.PID_servo2 = PIDController(1, 0.1, 0.01)
-        self.roll_servo = Servo(roll_servo_pin)
-        self.pitch_servo = Servo(pitch_servo_pin)
-        # self.steer_servo = Servo(steer_servo_pin)
-        self.roll_pwm = 10.5
-        self.pitch_pwm = 10.5
-        self.steer_pwm = 7.5
+        # self.PID_roll_servo = PIDController(1, 0.1, 0.01)
+        # self.PID_pitch_servo = PIDController(1, 0.1, 0.01)
+        self.pca9685 = ServoKit(channels=16, address=0x40)  # PCA9685 
+
+        self.roll_angle = 90
+        self.pitch_angle = 90
+        self.steer_angle = 90
 
     def communication(self):
         rospy.Subscriber("/our_msg/pitch", Float32, self.pitch_callback)
         rospy.Subscriber("/our_msg/roll", Float32, self.roll_callback)
         # rospy.Subscriber("/carla/ego_vehicle/vehicle_control_cmd_manual", CarlaEgoVehicleControl, self.steer_callback)
 
-    # def imu_callback(self, data):
-    #     #'imu' 메시지에서 'orientation' 필드만 출력
-    #     orientation = data.orientation
-    #     print("IMU orientation: x={}".format(orientation.x))
-    #     print("IMU orientation: y={}".format(orientation.y))
-
-    #     #servo1_angle = max(0, min((orientation.x * 250 + 180) / 2, 180))
-
-    #     servo1_angle = (orientation.x * 250 + 180) / 2
-    #     if servo1_angle >= upper_limit:
-    #         servo1_angle = upper_limit
-    #     elif servo1_angle <= lower_limit:
-    #         servo1_angle = lower_limit
-    #     #servo2_angle = max(0, min((orientation.y * 400 + 180) / 2, 180))
-    #     servo2_angle = (orientation.y * 400 + 180) / 2
-    #     if servo2_angle >= upper_limit:
-    #         servo2_angle = upper_limit
-    #     elif servo2_angle <= lower_limit:
-    #         servo2_angle = lower_limit
-
-    #     print("roll : ", servo1_angle)
-    #     print("pitch : ", servo2_angle)
-
-    #     # get actual gyroscope data
-    #     gyro_data = self.mpu.get_gyro_data()
-    #     X_mpu = gyro_data['x']
-    #     Y_mpu = gyro_data['y']
-
-    #     print("gyro x: ", X_mpu)
-    #     print("gyro y: ", Y_mpu)
-
-    #     # use PI control
-    #     cv1 = self.PID_servo1.calculate(servo1_angle, X_mpu) # roll
-    #     cv2 = self.PID_servo2.calculate(servo2_angle, Y_mpu) # pitch
-
-    #     print("PID calculated value roll", cv1)
-    #     print("PID calculated value pitch: ", cv2)
-
-    #     #
-    #     self.kit.servo[7].angle = cv1
-    #     self.kit.servo[6].angle = cv2
-
     def pitch_callback(self, msg):
-        pitch_angle = float(msg.data)
-        self.pitch_pwm = pitch_angle_to_duty_cycle(pitch_angle)
-        if self.pitch_pwm > max_pitch_pwm:
-            self.pitch_pwm = max_pitch_pwm
-        elif self.pitch_pwm < min_pitch_pwm:
-            self.pitch_pwm = min_pitch_pwm
-        print("pitch: ", self.pitch_pwm)
+        self.pitch_angle = float(msg.data) + 90
+        if self.pitch_angle > max_pitch_angle:
+            self.pitch_angle = max_pitch_angle
+        elif self.pitch_angle < min_pitch_angle:
+            self.pitch_angle = min_pitch_angle
+        print("pitch: ", self.pitch_angle)
 
     def roll_callback(self, msg):
-        roll_angle = float(msg.data)
-        self.roll_pwm = roll_angle_to_duty_cycle(roll_angle)
-        if self.roll_pwm > max_roll_pwm:
-            self.roll_pwm = max_roll_pwm
-        elif self.roll_pwm < min_roll_pwm:
-            self.roll_pwm = min_roll_pwm
-        print("roll: ", self.roll_pwm)
+        self.roll_angle = float(msg.data) + 100
+        if self.roll_angle > max_roll_angle:
+            self.roll_angle = max_roll_angle
+        elif self.roll_angle < min_roll_angle:
+            self.roll_angle = min_roll_angle
+        print("roll: ", self.roll_angle)
 
     # def steer_callback(self, msg):
     #     steer_angle = float(msg.data)
-    #     self.steer_pwm = angle_to_duty_cycle(steer_angle)
-    #     if self.steer_pwm > max_steer_pwm:
-    #         self.steer_pwm = max_steer_pwm
-    #     elif self.steer_pwm < min_steer_pwm:
-    #         self.roll_pwm = min_steer_pwm
-    #     print("roll: ", self.steer_pwm)
+    #     if self.steer_angle > max_steer_angle:
+    #         self.steer_angle = max_steer_angle
+    #     elif self.steer_angle < min_steer_angle:
+    #         self.roll_angle = min_steer_angle
+    #     print("roll: ", self.steer_angle)
 
     def run(self):
         self.communication()
@@ -148,9 +146,9 @@ class Servo_Control:
         loop = rospy.Rate(50.0)  # frequency in Hz
 
         while not rospy.is_shutdown():
-            self.pitch_servo.set_duty_cycle(self.pitch_pwm)
-            self.roll_servo.set_duty_cycle(self.roll_pwm)
-            # self.steer_servo.set_duty_cycle(self.steer_pwm)
+            self.pca9685.servo[roll_pin].angle = self.roll_angle
+            self.pca9685.servo[pitch_pin].angle = self.pitch_angle
+            # self.steer_servo.set_duty_cycle(self.steer_angle)
             loop.sleep()
 
 
