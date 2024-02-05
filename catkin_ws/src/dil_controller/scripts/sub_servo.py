@@ -151,8 +151,17 @@ class Servo_Control:
             # self.steer_servo.set_duty_cycle(self.steer_angle)
             loop.sleep()
 
+    def stop(self):
+        self.pca9685.servo[roll_pin].angle = 90
+        self.pca9685.servo[pitch_pin].angle = 90
+        # self.pca9685.servo[steer_pin].angle = 90
 
 if __name__ == "__main__":
     rospy.init_node("imu_steer_orientation_subscriber", anonymous=True)
     servo_control = Servo_Control()
-    servo_control.run()
+    try:
+        servo_control.run()
+    except rospy.ROSInterruptException:
+        pass
+    finally:
+        servo_control.stop()

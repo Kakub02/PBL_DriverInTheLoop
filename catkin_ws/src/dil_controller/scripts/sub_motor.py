@@ -12,9 +12,9 @@ from std_msgs.msg import String, Float32, Bool
 
 # Set GPIO pin numbers for motors
 # Motor 1
-motor_in1 = 22 #5
-motor_in2 = 27 #6
-motor_ena = 17 #26
+motor_in1 = 22
+motor_in2 = 27
+motor_ena = 17
 # Motor 2
 motor_in3 = 23
 motor_in4 = 24
@@ -25,9 +25,10 @@ left_encoder_pin = 16
 right_encoder_pin = 12
 
 # Set PID parameters
-kp = 0.000136
-ti = 7.0263
-td = 0
+Kp = 0.000136
+Ki = 7.0263
+Kd = 0
+
 
 # Set border values
 min_speed_kmh = 0.1
@@ -224,8 +225,18 @@ class Motor_Control:
             
             loop.sleep()
 
+    def stop(self):
+        self.motor1.stop_motor()
+        self.motor2.stop_motor()
+
 
 if __name__ == "__main__":
     rospy.init_node("Motor_node", anonymous=True)
     motor_control = Motor_Control()
-    motor_control.run()
+    try:
+        motor_control.run()
+    except rospy.ROSInterruptException:
+        pass
+    finally:
+        motor_control.stop()
+        GPIO.cleanup()
