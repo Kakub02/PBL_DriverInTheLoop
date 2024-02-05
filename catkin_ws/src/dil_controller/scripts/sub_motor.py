@@ -12,9 +12,9 @@ from std_msgs.msg import String, Float32, Bool
 
 # Set GPIO pin numbers for motors
 # Motor 1
-motor_in1 = 5
-motor_in2 = 6
-motor_ena = 26
+motor_in1 = 22 #5
+motor_in2 = 27 #6
+motor_ena = 17 #26
 # Motor 2
 motor_in3 = 23
 motor_in4 = 24
