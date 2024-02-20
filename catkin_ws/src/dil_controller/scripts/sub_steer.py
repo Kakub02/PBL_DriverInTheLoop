@@ -5,8 +5,8 @@ from adafruit_servokit import ServoKit
 from std_msgs.msg import String, Float32, Bool
 
 # minimum and maximum steer angles
-min_steer_angle = 60
-max_steer_angle = 120
+min_steer_angle = 65
+max_steer_angle = 115
 
 # pin number on pca9685 board
 steer_pin = 2

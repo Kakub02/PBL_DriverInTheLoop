@@ -1,4 +1,4 @@
-# Class to monitor a rotary encoder and update a value.  You can either read the value when you need it, by calling getValue(), or
+# Class to monitor a rotary encoder and update a value.  You can either read the value when you need it, by calling get_value(), or
 # you can configure a callback which will be called whenever the value changes.
 
 import RPi.GPIO as GPIO
@@ -86,10 +86,10 @@ class Encoder:
 
         return val_since_last_read / time_elapsed
 
-    def getValueSinceLastRead(self):
+    def get_valueSinceLastRead(self):
         val_since_last_read = self.value - self.prev_value
         self.prev_value = self.value
         return val_since_last_read
 
-    def getValue(self):
+    def get_value(self):
         return self.value

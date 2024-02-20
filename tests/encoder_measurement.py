@@ -1,8 +1,6 @@
 import time
 
-# from encoder import Encoder
-from enc_test import Encoder_
-# from pid import PID
+from encoder import Encoder
 from pid_controller import PID_controller
 import matplotlib.pyplot as plot
 import pandas as pd
@@ -56,7 +54,7 @@ class DC_Motor:
 
 def measure_max_encoder_speed(number_of_iterations=1000, start_measuring_iteration=200):
     motor1 = DC_Motor(motor_in1, motor_in2, motor_ena)
-    encoder = Encoder_(left_pin, right_pin)
+    encoder = Encoder(left_pin, right_pin)
 
     setpoint_pwm = 100
 
@@ -66,8 +64,8 @@ def measure_max_encoder_speed(number_of_iterations=1000, start_measuring_iterati
     for loop_count in range(number_of_iterations):
         t1 = time.time()
 
-        encoder_value = encoder.getValue()
-        encoder.clearValue()
+        encoder_value = encoder.get_value()
+        encoder.clear_value()
         motor1.set_speed(setpoint_pwm)
         print(loop_count, ": encoder_value = ", encoder_value)
 
@@ -84,7 +82,7 @@ def measure_max_encoder_speed(number_of_iterations=1000, start_measuring_iterati
 
 def test_pid(number_of_iterations=1000):
     motor1 = DC_Motor(motor_in1, motor_in2, motor_ena)
-    encoder = Encoder_(left_pin, right_pin)
+    encoder = Encoder(left_pin, right_pin)
 
     pid = PID_controller(0.1538, 2.263, 0, 1, 0, 100, 0, 250, 1/frequency)
 
@@ -97,8 +95,8 @@ def test_pid(number_of_iterations=1000):
         for loop_count in range(number_of_iterations):
             t1 = time.time()
 
-            encoder_value = encoder.getValue()
-            encoder.clearValue()
+            encoder_value = encoder.get_value()
+            encoder.clear_value()
 
             real_speed = encoder_value * frequency
             pid_pwm = pid.update(setpoint_speed, real_speed)
@@ -128,7 +126,7 @@ def test_pid(number_of_iterations=1000):
 
 def measure_encoder(number_of_iterations=1000):
     motor1 = DC_Motor(motor_in1, motor_in2, motor_ena)
-    encoder = Encoder_(left_pin, right_pin)
+    encoder = Encoder(left_pin, right_pin)
 
     setpoint_pwm = 0
 
@@ -142,8 +140,8 @@ def measure_encoder(number_of_iterations=1000):
         for loop_count in range(number_of_iterations):
             t1 = time.time()
 
-            encoder_value = encoder.getValue()
-            encoder.clearValue()
+            encoder_value = encoder.get_value()
+            encoder.clear_value()
             motor1.set_speed(setpoint_pwm)
             print(loop_count, ": encoder_value = ", encoder_value)
 

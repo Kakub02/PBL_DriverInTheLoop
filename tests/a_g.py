@@ -66,6 +66,6 @@ labels = ['a_roll', 'a_pitch', 'g_roll', 'g_pitch', 'final_roll', 'final_pitch']
 
 if __name__ == "__main__":
 
-    real_time_plot = RealTimePlot(labels, 'IMU Measurements over Time', 'Samples', 'Values', 200, (-180, 180), 50)
+    real_time_plot = RealTimePlot(labels, 'IMU Measurements over Time', 'Samples', 'Values', 200, (-180, 180), 50, False)
     real_time_plot.set_updating_function(lambda: measure_imu(real_time_plot, 10000))
     real_time_plot.run()

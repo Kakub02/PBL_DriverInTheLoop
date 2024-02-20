@@ -78,10 +78,8 @@ class Motor_Control:
         loop = rospy.Rate(frequency)
 
         while not rospy.is_shutdown():
-            start_time = time.time()
-
-            encoder_value = self.encoder.getValue()
-            self.encoder.clearValue()
+            encoder_value = self.encoder.get_value()
+            self.encoder.clear_value()
 
             real_speed = encoder_value * frequency
             pid_pwm = self.pid.update(self.setpoint_speed, real_speed)
