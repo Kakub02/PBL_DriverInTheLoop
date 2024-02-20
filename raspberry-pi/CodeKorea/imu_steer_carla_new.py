@@ -7,8 +7,8 @@ from sensor_msgs.msg import Imu
 #import RPi.GPIO as GPIO 
 #from time import sleep
 from adafruit_servokit import ServoKit
-from pid_controller import PIDController
-from mpu6050 import mpu6050
+from tests.pid_controller import PIDController
+from tests.mpu6050 import mpu6050
 
 lower_limit = 60 #min angle of roll and pitch
 upper_limit = 120 #max angle of roll and pitch
